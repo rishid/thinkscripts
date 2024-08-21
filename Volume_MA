@@ -1,0 +1,40 @@
+# Volume Based Coloured Bars
+
+declare real_size;
+declare on_volume;
+
+input length = 21;
+
+def avrg = SimpleMovingAvg(volume, length);
+
+# Define conditions for downward volume and upward volume
+def volDownCondition = close < open;
+def volUpCondition = close > open;
+
+# Define volume conditions
+def highVolume = volume > avrg * 1.5;
+def midVolume = volume >= avrg * 0.5 and volume <= avrg * 1.5;
+def lowVolume = volume < avrg * 0.5;
+
+# Define color conditions
+def downHighVol = highVolume and volDownCondition;
+def downMidVol = midVolume and volDownCondition;
+def downLowVol = lowVolume and volDownCondition;
+
+def upHighVol = highVolume and volUpCondition;
+def upMidVol = midVolume and volUpCondition;
+def upLowVol = lowVolume and volUpCondition;
+
+# Assign colors based on conditions
+plot Vol = volume;
+Vol.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+Vol.SetLineWeight(4);
+Vol.AssignValueColor(
+    if downHighVol then Color.RED 
+    else if downMidVol then Color.DARK_RED 
+    else if downLowVol then Color.DARK_RED 
+    else if upHighVol then Color.UPTICK 
+    else if upMidVol then Color.DARK_GREEN 
+    else if upLowVol then Color.DARK_GREEN 
+    else Color.RED
+);
