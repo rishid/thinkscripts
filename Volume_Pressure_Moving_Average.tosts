@@ -1,0 +1,46 @@
+#// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+#// © Ankit_1618
+#study("Cumulative Volume Delta")
+# Converted by Sam4Cok@Samer800    - Request from useThinkScript.com member
+declare Lower;
+
+input cumulation_length = 14;
+input movAvgType = AverageType.EXPONENTIAL;
+
+def upper_wick = if close>open then high-close else high-open;
+def lower_wick = if close>open then open-low else close-low;
+def spread = high-low;
+def body_length = spread - (upper_wick + lower_wick);
+
+def percent_upper_wick = upper_wick/spread;
+def percent_lower_wick = lower_wick/spread;
+def percent_body_length = body_length/spread;
+
+def buying_volume = if close>open then
+               (percent_body_length + (percent_upper_wick + percent_lower_wick)/2)*volume else
+               ((percent_upper_wick + percent_lower_wick)/2) * volume;
+
+def selling_volume = if close<open then
+                (percent_body_length + (percent_upper_wick + percent_lower_wick)/2)*volume else
+                ((percent_upper_wick + percent_lower_wick)/2) * volume;
+
+def cumulative_buying_volume = MovingAverage(movAvgType, buying_volume,cumulation_length);
+def cumulative_selling_volume = MovingAverage(movAvgType, selling_volume,cumulation_length);
+
+AddCloud(cumulative_buying_volume, cumulative_selling_volume, Color.DARK_GREEN, Color.DARK_RED, yes);
+
+
+def volume_strength_wave = if cumulative_buying_volume > cumulative_selling_volume then
+                          cumulative_buying_volume else cumulative_selling_volume;
+def ema_volume_strength_wave = MovingAverage(movAvgType, volume_strength_wave , cumulation_length);
+
+plot emaVol = ema_volume_strength_wave;
+emaVol.SetDefaultColor(Color.GRAY);
+
+def cumulative_volume_delta = cumulative_buying_volume - cumulative_selling_volume;
+
+plot CumVolDeltaHist = cumulative_volume_delta;
+CumVolDeltaHist.AssignValueColor(if cumulative_volume_delta>0 then Color.GREEN else Color.RED);
+CumVolDeltaHist.SetPaintingStrategy(PaintingStrategy.SQUARED_HISTOGRAM);
+
+#-- END of CODE
