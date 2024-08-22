@@ -36,5 +36,5 @@ Vol.AssignValueColor(
     else if upHighVol then Color.UPTICK 
     else if upMidVol then Color.DARK_GREEN 
     else if upLowVol then Color.DARK_GREEN 
-    else Color.RED
+    else Color.CYAN
 );
