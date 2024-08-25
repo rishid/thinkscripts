@@ -25,7 +25,7 @@ input ShowCurrentBar = yes;
 # Volume calcs
 def volLast30DayAvg = Average(volume(period = "DAY"), length=length)[1];
 def today = volume(period = "DAY");
-def percentOf30Day = Round((today / volLast30DayAvg) * 100, 0);
+def todayPercentOf30Day = Round((today / volLast30DayAvg) * 100, 0);
 def avg30Bars = VolumeAvg(length).VolAvg[1];
 
 # Proxy buyer/seller volume by using % of candle "won" by each side
