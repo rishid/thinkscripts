@@ -1,0 +1,59 @@
+# Rishi Volume Stats
+# Created: August 25, 2024
+# Copyright: Rishi Dhupar
+#
+# Combination of a few ideas:
+# - add labels for daily average volume and current volume and a few other stats
+# - changes label colors if symbol is having unusually daily volume
+# - highlight volume candles if it is higher volume than recent candles
+# - show buy volume vs sell volume for each candle
+#   - thinkorswim does not provide buy vs sell volume but by using the price candle, one can create a "proxy" 
+#     that estimates this
+ 
+declare upper;
+
+# Inputs 
+input length = 30;  # Number of days for average daily volume calculation
+input unusualVolumePercent = 20;  # Multiplier for highlighting unusual volume
+
+input Show30DayAvg = yes;
+input ShowTodayVolume =  yes;
+input ShowPercentOf30DayAvg = yes;
+input Show30BarAvg = yes;
+input ShowCurrentBar = yes;
+
+# Volume calcs
+def volLast30DayAvg = Average(volume(period = "DAY"), length=length)[1];
+def today = volume(period = "DAY");
+def percentOf30Day = Round((today / volLast30DayAvg) * 100, 0);
+def avg30Bars = VolumeAvg(length).VolAvg[1];
+
+# Proxy buyer/seller volume by using % of candle "won" by each side
+def buyVolume = volume * (close - low) / (high - low);
+def sellVolume = volume * (high - close) / (high - low);
+
+# Selling Volume
+Plot SellVol = sellVolume;
+SellVol.setPaintingStrategy(PaintingStrategy.Histogram);
+SellVol.SetDefaultColor(Color.Red);
+SellVol.HideTitle();
+SellVol.HideBubble();
+SellVol.SetLineWeight(5);
+
+# Total Volume
+Plot BuyVol = volume;
+BuyVol.setPaintingStrategy(PaintingStrategy.Histogram);
+BuyVol.SetDefaultColor(Color.Dark_Green);
+BuyVol.HideTitle();
+BuyVol.HideBubble();
+BuyVol.SetLineWeight(5);
+
+# Labels
+AddLabel(Show30DayAvg, "Daily Avg: " + Round(volLast30DayAvg, 0), Color.LIGHT_GRAY);
+AddLabel(ShowTodayVolume, "Today: " + today, (if percentOf30Day >= UnusualVolumePercent then Color.GREEN else if percentOf30Day >= 100 then Color.ORANGE else Color.LIGHT_GRAY));
+AddLabel(ShowPercentOf30DayAvg, percentOf30Day + "%", (if percentOf30Day >= UnusualVolumePercent then Color.GREEN else if percentOf30Day >= 100 then Color.ORANGE else Color.WHITE) );
+AddLabel(Show30BarAvg, "Avg 30 Bars: " + Round(avg30Bars, 0), Color.LIGHT_GRAY);
+AddLabel(ShowCurrentBar, "Cur Bar: " + volume, (if volume >= avg30Bars then Color.GREEN else Color.ORANGE));
+
+# Scanner plots
+                                                
