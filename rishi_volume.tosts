@@ -14,12 +14,14 @@ declare lower;
 
 # Inputs
 input DayLength = 30; # Number of days for average daily volume calculation
-input UnusualVolumePercent = 200;  # Multiplier for highlighting unusual volume
+input UnusualDailyVolumePercent = 125;  # Multiplier for highlighting unusual volume
 # Daily average volume knobs
 input ShowDayAvg = yes;
 input ShowTodayVolume =  yes;
 input ShowPercentOfDayAvg = yes;
 # Current timeframe related knobs
+input BarLength = 21; # Number of bars for average bar volume calculation
+input UnusualBarVolumePercent = 150;  # Multiplier for highlighting unusual volume
 input ShowBarAvg = yes;
 input ShowCurrentBar = yes;
 input ShowPercentOfBarAvg = yes;
@@ -34,35 +36,48 @@ def sellVolume = volume * (high - close) / (high - low);
 def volLastDayAvg = MovingAverage(AverageType.SIMPLE, volume(period = AggregationPeriod.DAY), DayLength)[1];
 def today = volume(period = "DAY");
 def todayPercentOfDay = Round((today / volLastDayAvg) * 100, 0);
-def avg30Bars = VolumeAvg(DayLength).VolAvg[1];
+def avgBars = VolumeAvg(BarLength).VolAvg; # TODO: should I use previous calc value, i.e. [1]
 def curVolume = volume;
-def percentOf30Bar = Round((curVolume / avg30Bars) * 100, 0);
+def percentOfBar = Round((curVolume / avgBars) * 100, 0);
 def sellVolPercent = Round((sellVolume / curVolume) * 100, 0);
+
+# Define volume conditions
+def highVolume = percentOfBar > UnusualBarVolumePercent;
+def midVolume = percentOfBar >= 50 and percentOfBar <= UnusualBarVolumePercent;
+def lowVolume = percentOfBar < 50;
 
 # Selling Volume
 plot SellVol = sellVolume;
 SellVol.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
-SellVol.SetDefaultColor(Color.RED);
-SellVol.HideTitle();
-SellVol.HideBubble();
-SellVol.SetLineWeight(1);
+# SellVol.HideTitle();
+# SellVol.HideBubble();
+SellVol.SetLineWeight(4);
+SellVol.AssignValueColor(
+    if highVolume then Color.RED
+    else if midVolume then Color.DARK_RED
+    else Color.DARK_RED
+);
 
 # Total Volume
 plot BuyVol = volume;
 BuyVol.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
-BuyVol.SetDefaultColor(Color.DARK_GREEN);
-BuyVol.HideTitle();
-BuyVol.HideBubble();
-BuyVol.SetLineWeight(1);
+# BuyVol.HideTitle();
+# BuyVol.HideBubble();
+BuyVol.SetLineWeight(4);
+BuyVol.AssignValueColor(
+    if highVolume then Color.UPTICK
+    else if midVolume then Color.DARK_GREEN
+    else Color.DARK_GREEN
+);
 
 # Labels
 AddLabel(ShowDayAvg, "Daily Avg: " + Round(volLastDayAvg, 0), Color.LIGHT_GRAY);
-AddLabel(ShowTodayVolume, "Today: " + today, (if todayPercentOfDay >= UnusualVolumePercent then Color.GREEN else if todayPercentOfDay >= 100 then Color.ORANGE else Color.LIGHT_GRAY));
-AddLabel(ShowPercentOfDayAvg, todayPercentOfDay + "%", (if todayPercentOfDay >= UnusualVolumePercent then Color.GREEN else if todayPercentOfDay >= 100 then Color.ORANGE else Color.WHITE) );
-AddLabel(ShowBarAvg, "Avg Bars: " + Round(avg30Bars, 0), Color.LIGHT_GRAY);
-AddLabel(ShowCurrentBar, "Cur Bar: " + curVolume, (if percentOf30Bar >= UnusualVolumePercent then Color.GREEN else if percentOf30Bar >= 100 then Color.ORANGE else Color.LIGHT_GRAY));
-AddLabel(ShowPercentOfBarAvg, percentOf30Bar + "%", (if percentOf30Bar >= UnusualVolumePercent then Color.GREEN else if percentOf30Bar >= 100 then Color.ORANGE else Color.WHITE) );
-AddLabel(ShowSellVolumePercent, "Cur Bar Sell %: " + sellVolPercent, (if sellVolPercent > 51 then Color.RED else if sellVolPercent < 49 then Color.GREEN else Color.ORANGE));
+AddLabel(ShowTodayVolume, "Today: " + today, (if todayPercentOfDay >= UnusualDailyVolumePercent then Color.GREEN else if todayPercentOfDay >= 100 then Color.ORANGE else Color.LIGHT_GRAY));
+AddLabel(ShowPercentOfDayAvg, todayPercentOfDay + "%", (if todayPercentOfDay >= UnusualDailyVolumePercent then Color.GREEN else if todayPercentOfDay >= 100 then Color.ORANGE else Color.WHITE) );
+AddLabel(ShowBarAvg, "Avg Bars: " + Round(avgBars, 0), Color.LIGHT_GRAY);
+AddLabel(ShowCurrentBar, "Cur Bar: " + curVolume, (if percentOfBar >= UnusualDailyVolumePercent then Color.GREEN else if percentOfBar >= 100 then Color.ORANGE else Color.LIGHT_GRAY));
+AddLabel(ShowPercentOfBarAvg, percentOfBar + "%", (if percentOfBar >= UnusualDailyVolumePercent then Color.GREEN else if percentOfBar >= 100 then Color.ORANGE else Color.WHITE) );
+AddLabel(ShowSellVolumePercent, "Cur Bar Sell %: " + sellVolPercent, (if sellVolPercent > 51 then Color.DARK_RED else if sellVolPercent < 49 then Color.DARK_GREEN else Color.ORANGE));
 
 # Scanner plots
 # plot scan_signal_buy = BuyVol > BuyVol[1];
