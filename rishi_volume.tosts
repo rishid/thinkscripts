@@ -19,7 +19,7 @@ input UnusualDailyVolumePercent = 125;  # Multiplier for highlighting unusual vo
 input ShowDayAvg = yes;
 input ShowTodayVolume =  yes;
 input ShowPercentOfDayAvg = yes;
-# Current timeframe related knobs
+# Current timeframe bar knobs
 input BarLength = 21; # Number of bars for average bar volume calculation
 input UnusualBarVolumePercent = 150;  # Multiplier for highlighting unusual volume
 input ShowBarAvg = yes;
