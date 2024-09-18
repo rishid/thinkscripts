@@ -16,7 +16,7 @@
 # Based on my own ideas and ideas from Ripster, drippy2hard, 
 # Adam Sliver, and others.
 
-input trading_type = {"Scalp", default "Day", "Multiday", "Swing", "Position", "Long-term"};
+input trading_type = {"Scalp - 4H", default "Day - Day", "Multiday - Week", "Swing - Month", "Position - Qtr", "Long-term - Year"};
 input show_all_fibonacci_levels = yes;
 input show_extensions = no;
 input use_options_labels = yes;
@@ -30,17 +30,17 @@ input slow_ema = 34;
 
 def trading_period;
 switch (trading_type) {
-case "Scalp":
+case "Scalp - 4H":
     trading_period = AggregationPeriod.FOUR_HOURS;
-case "Day":
+case "Day - Day":
     trading_period = AggregationPeriod.DAY;
-case "Multiday":
+case "Multiday - Week":
     trading_period = AggregationPeriod.WEEK;
-case "Swing":
+case "Swing - Month":
     trading_period = AggregationPeriod.MONTH;
-case "Position":
+case "Position - Qtr":
     trading_period = AggregationPeriod.QUARTER;
-case "Long-term":
+case "Long-term - Year":
     trading_period = AggregationPeriod.YEAR;
 }
 
