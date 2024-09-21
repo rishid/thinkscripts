@@ -1,0 +1,116 @@
+# Saty Pivot Ribbon
+# Copyright (C) 2022 Saty Mahajan
+#
+# A 3 EMA Ribbon system that simplifies measuring and using emas for trend and support/resistance.
+# Special thanks to Ripster (@ripster47) for his education and EMA Clouds which inspired this indicator.
+
+# Settings
+input time_warp = {default "off", "1m", "2m", "3m", "4m", "5m", "10m", "15m", "20m", "30m", "1h", "2h", "4h", "D", "W", "M", "Y"};
+input Fast_EMA = 8;
+input Pivot_EMA = 21;
+input Slow_EMA = 34;
+input Highlight_Fast = no;
+input Highlight_Pivot = no;
+input Highlight_Slow = no;
+input Show_Conviction_Arrows = yes;
+input Conviction_Arrow_Size = 2;
+input Fast_Conviction_EMA = 13;
+input Slow_Conviction_EMA = 48;
+input Show_Fast_Conviction_EMA = yes;
+input Show_Slow_Conviction_EMA = yes;
+
+# Time Warp
+def price;
+switch (time_warp) {
+case "off":
+    price = close;
+case "1m":
+    price = close(period = AggregationPeriod.MIN);
+case "2m":
+    price = close(period = AggregationPeriod.TWO_MIN);
+case "3m":
+    price = close(period = AggregationPeriod.THREE_MIN);
+case "4m":
+    price = close(period = AggregationPeriod.FOUR_MIN);
+case "5m":
+    price = close(period = AggregationPeriod.FIVE_MIN);
+case "10m":
+    price = close(period = AggregationPeriod.TEN_MIN);
+case "15m":
+    price = close(period = AggregationPeriod.FIFTEEN_MIN);
+case "20m":
+    price = close(period = AggregationPeriod.TWENTY_MIN);
+case "30m":
+    price = close(period = AggregationPeriod.THIRTY_MIN);
+case "1h":
+    price = close(period = AggregationPeriod.HOUR);
+case "2h":
+    price = close(period = AggregationPeriod.TWO_HOURS);
+case "4h":
+    price = close(period = AggregationPeriod.FOUR_HOURS);
+case "D":
+    price = close(period = AggregationPeriod.DAY);
+case "W":
+    price = close(period = AggregationPeriod.WEEK);
+case "M":
+    price = close(period = AggregationPeriod.MONTH);
+case "Y":
+    price = close(period = AggregationPeriod.YEAR);
+}
+
+# Calculations
+def FastValue = ExpAverage(price, Fast_EMA);
+def PivotValue = ExpAverage(price, Pivot_EMA);
+def SlowValue = ExpAverage(price, Slow_EMA);
+def Fast_Conviction_Value = ExpAverage(price, Fast_Conviction_EMA);
+def Slow_Conviction_Value = ExpAverage(price, Slow_Conviction_EMA);
+
+# Add Clouds
+DefineGlobalColor("Fast Long", Color.GREEN);
+DefineGlobalColor("Fast Short", Color.RED);
+AddCloud(FastValue, PivotValue, GlobalColor("Fast Long"), GlobalColor("Fast Short"));
+DefineGlobalColor("Slow Long", Color.CYAN);
+DefineGlobalColor("Slow Short", Color.LIGHT_ORANGE);
+AddCloud(PivotValue, SlowValue, GlobalColor("Slow Long"), GlobalColor("Slow Short"));
+
+# Add Pivot Plot
+DefineGlobalColor("Pivot Highlight", Color.LIGHT_GRAY);
+plot Pivot = if Highlight_Pivot then PivotValue else Double.nan;
+Pivot.AssignValueColor(GlobalColor("Pivot Highlight"));
+
+# Add Fast Plot
+DefineGlobalColor("Fast Highlight", Color.LIGHT_GRAY);
+plot Fast = if Highlight_Fast then FastValue else Double.nan;
+Pivot.AssignValueColor(GlobalColor("Fast Highlight"));
+
+# Add Slow Plot
+DefineGlobalColor("Slow Highlight", Color.LIGHT_GRAY);
+plot Slow = if Highlight_Slow then SlowValue else Double.nan;
+Pivot.AssignValueColor(GlobalColor("Slow Highlight"));
+
+# Conviction Arrows (default based on 13/48)
+# Read more about that combo here: http://etfhq.com/blog/2013/01/15/golden-cross-which-is-the-best/#Top
+DefineGlobalColor("Bullish Conviction Arrow", Color.CYAN);
+DefineGlobalColor("Bearish Conviction Arrow", Color.ORANGE);
+def bullish_conviction = Fast_Conviction_Value >= Slow_Conviction_Value;
+def bearish_conviction = Fast_Conviction_Value < Slow_Conviction_Value;
+def bullish_conviction_confirmed = (bullish_conviction == YES and bullish_conviction[1] == NO);
+def bearish_conviction_confirmed = (bearish_conviction == YES and bearish_conviction[1] == NO);
+plot bullish_conviction_signal = if bullish_conviction_confirmed and Show_Conviction_Arrows then price else Double.NaN;
+plot bearish_conviction_signal = if bearish_conviction_confirmed and Show_Conviction_Arrows then price else Double.NaN;
+bullish_conviction_signal.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+bullish_conviction_signal.AssignValueColor(GlobalColor("Bullish Conviction Arrow"));
+bullish_conviction_signal.SetLineWeight(Conviction_Arrow_Size);
+bullish_conviction_signal.HideBubble();
+bearish_conviction_signal.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+bearish_conviction_signal.AssignValueColor(GlobalColor("Bearish Conviction Arrow"));
+bearish_conviction_signal.SetLineWeight(Conviction_Arrow_Size);
+bearish_conviction_signal.HideBubble();
+plot fast_conviction_ema_signal = if Show_Fast_Conviction_EMA then Fast_Conviction_Value else Double.NaN;
+fast_conviction_ema_signal.setDefaultColor(Color.LIGHT_GRAY);
+fast_conviction_ema_signal.HideBubble();
+fast_conviction_ema_signal.SetLineWeight(1);
+plot slow_conviction_ema_signal = if Show_Slow_Conviction_EMA then Slow_Conviction_Value else Double.NaN;
+slow_conviction_ema_signal.setDefaultColor(Color.PLUM);
+slow_conviction_ema_signal.HideBubble();
+slow_conviction_ema_signal.SetLineWeight(1);
