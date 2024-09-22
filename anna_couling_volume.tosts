@@ -1,0 +1,18 @@
+# Looks for five consecutive bars where the closing price increases/decreases, accompanied by a volume increase of at least 33% compared to the previous bar.
+
+input OpenTime = 0945;
+input CloseTime = 1555;
+
+def active = SecondsFromTime(OpenTime) >= 0 and SecondsTillTime(CloseTime) > 0;
+def anomaly1 = active and sum(close > close[1], 5) >= 5 and volume > (volume[1] * 1.33);
+def anomaly2 = active and sum(close < close[1], 5) >= 5 and volume > (volume[1] * 1.33);
+
+plot H = if anomaly1 then high else Double.NaN;
+plot L = if anomaly2 then low else Double.NaN;
+
+H.SetPaintingStrategy(PaintingStrategy.ARROW_UP);
+H.SetPaintingStrategy(PaintingStrategy.ARROW_DOWN);
+H.SetDefaultColor(Color.CYAN);
+L.SetDefaultColor(Color.YELLOW);
+H.SetLineWeight(3);
+L.SetLineWeight(3);
