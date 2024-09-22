@@ -16,3 +16,24 @@ H.SetDefaultColor(Color.CYAN);
 L.SetDefaultColor(Color.YELLOW);
 H.SetLineWeight(3);
 L.SetLineWeight(3);
+
+
+# Anna Couling VPA Indicator
+
+# Inputs
+length = input(14, title="Length for Average Volume Calculation")
+bodyThreshold = input(0.05, title="Candle Body Threshold (%)", minval=0.01, maxval=1)
+volumeThreshold = input(2, title="Volume Multiplier Threshold", minval=1)
+
+# Calculate average volume
+avgVolume = MovAvg(volume, length)
+
+# Define candle body size
+bodySize = Abs((close - open) / close) * 100
+
+# Define conditions
+smallBody = bodySize < bodyThreshold
+largeVolume = volume > (avgVolume * volumeThreshold)
+
+# Plot signals
+plotshape(series=smallBody and largeVolume, title="Potential Reversal", location=location.belowbar, color=color.yellow, style=shape.labelup)
