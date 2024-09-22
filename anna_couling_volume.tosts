@@ -37,3 +37,142 @@ largeVolume = volume > (avgVolume * volumeThreshold)
 
 # Plot signals
 plotshape(series=smallBody and largeVolume, title="Potential Reversal", location=location.belowbar, color=color.yellow, style=shape.labelup)
+
+
+
+# Original script by Cwparker23
+# Mods/additions by Tidan
+# Updates:
+#    Further reduced redundancy
+#    Reconfigured reversal signals to include magenta bars and set default mode to reversal
+#    Restructured how bull/bear volume bars are recognized
+#    Added option to use original buy/sell volume calculation or new method
+#    Removed bull/bear option and signals
+# v3
+
+
+#hint: The indicator finds irregular bodies based on candle size and volume, it colors price to indicate irregular bodies below volume average (blue bullish and plum bearish) and indicate irregular bodies above-average volume (cyan bullish and magenta bearish). Also colors price with above-average volume (green bullish and red bearish) and below-average volume (light green bullish and orange bearish). \n As confirmation watch TMO(trueMomentumOsc), it should be above zero for entering short and below zero for entering long.\n\n<b>Note: </b>To view aggregations higher than daily comment out the two "AddLabel" lines by prefixing them with a "#" sign.
+
+
+input showReversalSignals = yes;
+input reversalFilter = yes;
+input showLabels = no;
+input paintBars = no;
+input volAvgLength = 12; #default 12
+input volAvgType = averageType.exponential; #default exponential
+input useOriginalVolCalc = no;
+
+def revSig = showReversalSignals;
+def revFil = reversalFilter;
+
+
+####
+# new method to determine buying/selling volume
+#def buying = Round(volume * (close - low) / (high - low), 0);
+#def selling = Round(volume * (high - close) / (high - low), 0);
+
+def buying;
+def selling;
+if useOriginalVolCalc
+{
+    buying = if close > open then 1 else 0;
+    selling = if close < open then 1 else 0;
+}
+else
+{
+    buying = Round(volume * (close - low) / (high - low), 0);
+    selling = Round(volume * (high - close) / (high - low), 0);
+}
+####
+
+# Note: to view on time frames higher than Daily comment out these two AddLabel lines
+AddLabel(showLabels, "Day_volume: " + volume (period = "DAY" ), Color.LIGHT_GRAY);
+AddLabel(showLabels, "volume: " + volume, Color.white);
+
+declare lower;
+declare zerobase;
+
+plot Vol = volume;
+plot VolAvg = movingAverage(volAvgType,volume,volAvgLength);
+VolAvg .SetPaintingStrategy(PaintingStrategy.squared_HISTOGRAM);
+VolAvg .SetDefaultColor(Color.GRAY);
+def BODY_RANGE = max(open,close) - min(open,close);
+def IR_BODY = if (BODY_RANGE < BODY_RANGE[1]) and (volume > volume[1]) then 1 else 0 ;
+def IR_BODYG  = if IR_BODY and buying > selling then 1 else 0;
+def IR_BODYR  = if IR_BODY and buying < selling then 1 else 0;
+
+####
+# new method to determine vol bar properties
+def up3 = if IR_BODYG and (Vol > VolAvg) then 1 else 0;
+def up4 = if IR_BODYG then 1 else 0;
+def down3 = if IR_BODYR and (Vol > VolAvg) then 1 else 0;
+def down4 = if IR_BODYR then 1 else 0;
+def up = if (buying > selling) and (Vol > VolAvg)  then 1 else 0;
+def down = if (buying < selling) and (Vol > VolAvg) then 1 else 0;
+def up2 = if (buying > selling) then 1 else 0;
+def down2 = if (buying < selling) then 1 else 0;
+####
+
+Vol.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+Vol.SetLineWeight(3);
+Vol.DefineColor("Up", Color.green);
+Vol.DefineColor("Down", Color.red);
+Vol.DefineColor("Up2", Color.light_green);
+Vol.DefineColor("Down2", Color.dark_ORANGE );
+Vol.DefineColor("Up3", Color.cyan);
+Vol.DefineColor("Up4", Color.blue);
+Vol.DefineColor("Down3", Color.mAGENTA );
+Vol.DefineColor("Down4", Color.plum );
+
+Vol.AssignValueColor(
+    if up3 then Vol.color("Up3")
+    else if up4  then Vol.color("Up4")
+    else if down3 then Vol.color("Down3")
+    else if down4 then Vol.color("Down4")
+    else if up  then Vol.color("Up")
+    else if down then Vol.color("Down")
+    else if up2 then Vol.color("Up2")
+    else if down2 then Vol.color("Down2")
+    else color.white);
+
+
+
+
+DefineGlobalColor("CAM_UP", Color.GREEN);
+DefineGlobalColor("CAM_UP2", Color.liGHT_GREEN);
+DefineGlobalColor("CAM_UP3", Color.cyan);
+DefineGlobalColor("CAM_UP4", Color.blue);
+DefineGlobalColor("CAM_DN", Color.RED);
+DefineGlobalColor("CAM_DN2", Color.darK_ORANGE );
+DefineGlobalColor("CAM_DN3", Color.mAGENTA );
+DefineGlobalColor("CAM_DN4", Color.plum );
+
+AssignPriceColor(
+    if !paintBars then Color.CURRENT
+    else if up3 then GlobalColor("CAM_UP3")
+    else if down3 then GlobalColor("CAM_DN3")
+    else if up4 then GlobalColor("CAM_UP4")
+    else if down4 then GlobalColor("CAM_DN4")
+    else if up then GlobalColor("CAM_UP")
+    else if down then GlobalColor("CAM_DN")
+    else if up2 then GlobalColor("CAM_UP2")
+    else if down2 then GlobalColor("CAM_DN2")
+    else Color.CURRENT);
+
+
+
+# reversal signal set up
+def pastUp = if up[2] or up2[2] or up3[2] or up4[2] then 1 else 0;
+def pastDn = if down[2] or down2[2] or down3[2] or down4[2] then 1 else 0;
+def currUp = if up or up2 or up3 or up4 then 1 else 0;
+def currDn = if down or down2 or down3 or down4 then 1 else 0;
+def trigger = if (pastUp and currUp) or (pastDn and currDn) then 0 else 1;
+
+# cyan reversal
+addVerticalLine(revSig and revFil and up3[1] and trigger,"",if(currUp) then color.light_green else if (currDn) then color.dark_orange else color.gray,curve.short_dash);
+addVerticalLine(revSig and !revFil and up3[1],"",if(currUp) then color.light_green else if (currDn) then color.dark_orange else color.gray,curve.short_dash);
+# magenta reversal
+addVerticalLine(revSig and revFil and down3[1] and trigger,"",if(currUp) then color.light_green else if (currDn) then color.dark_orange else color.gray,curve.short_dash);
+addVerticalLine(revSig and !revFil and down3[1],"",if(currUp) then color.light_green else if (currDn) then color.dark_orange else color.gray,curve.short_dash);
+
+# end of script
