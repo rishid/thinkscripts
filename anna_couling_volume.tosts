@@ -20,27 +20,23 @@ L.SetLineWeight(3);
 
 # Anna Couling VPA Indicator
 
-# Inputs
-input length = 14;  # Length for Average Volume Calculation
-input bodyThreshold = 0.05;  # Candle Body Threshold (%)
-input volumeThreshold = 2;  # Volume Multiplier Threshold
+# Define input parameters
+input length = 14; # Length for average volume and body size calculations
+input bodySizeThreshold = 0.5; # Threshold for small body size (% of close)
+input volumeThreshold = 2; # Threshold for large volume (multiple of average)
 
-# Calculate average volume
+# Calculate average volume and body size
+def curBodySizeRelPct = AbsValue(close - open) / close * 100;
 def avgVolume = Average(volume, length);
+def avgBodySize = Average(curBodySizeRelPct, length);
 
-# Define candle body size
-def bodySize = AbsValue((close - open) / close) * 100;
+# Define small body size and large volume conditions
+def smallBody = curBodySizeRelPct < bodySizeThreshold * avgBodySize;
+def largeVolume = volume > volumeThreshold * avgVolume;
 
-# Define conditions
-def smallBody = bodySize < (bodyThreshold * 100);  # Convert percentage to a scale of 100
-def largeVolume = volume > (avgVolume * volumeThreshold);
-
-# Plot signals
 plot PotentialReversal = smallBody and largeVolume;
 PotentialReversal.SetPaintingStrategy(PaintingStrategy.BOOLEAN_WEDGE_UP);
 PotentialReversal.SetDefaultColor(Color.PINK);
-
-
 
 # Original script by Cwparker23
 # Mods/additions by Tidan
