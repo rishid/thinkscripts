@@ -70,6 +70,11 @@ BuyVol.AssignValueColor(
     else Color.DARK_GREEN
 );
 
+# Plot average bar volume
+plot avgBarsPlot = avgBars;
+avgBarsPlot.SetDefaultColor(Color.BLUE);
+avgBarsPlot.SetLineWeight(2); 
+
 # Labels
 AddLabel(ShowDayAvg, "Daily Avg: " + Round(volLastDayAvg, 0), Color.LIGHT_GRAY);
 AddLabel(ShowTodayVolume, "Today: " + today, (if todayPercentOfDay >= UnusualDailyVolumePercent then Color.GREEN else if todayPercentOfDay >= 100 then Color.ORANGE else Color.LIGHT_GRAY));
