@@ -63,25 +63,8 @@ input useOriginalVolCalc = no;
 def revSig = showReversalSignals;
 def revFil = reversalFilter;
 
-
-####
-# new method to determine buying/selling volume
-#def buying = Round(volume * (close - low) / (high - low), 0);
-#def selling = Round(volume * (high - close) / (high - low), 0);
-
-def buying;
-def selling;
-if useOriginalVolCalc
-{
-    buying = if close > open then 1 else 0;
-    selling = if close < open then 1 else 0;
-}
-else
-{
-    buying = Round(volume * (close - low) / (high - low), 0);
-    selling = Round(volume * (high - close) / (high - low), 0);
-}
-####
+def buying = Round(volume * (close - low) / (high - low), 0);
+def selling = Round(volume * (high - close) / (high - low), 0);
 
 # Note: to view on time frames higher than Daily comment out these two AddLabel lines
 AddLabel(showLabels, "Day_volume: " + volume (period = "DAY" ), Color.LIGHT_GRAY);
@@ -91,10 +74,10 @@ declare lower;
 declare zerobase;
 
 plot Vol = volume;
-plot VolAvg = movingAverage(volAvgType,volume,volAvgLength);
-VolAvg .SetPaintingStrategy(PaintingStrategy.squared_HISTOGRAM);
-VolAvg .SetDefaultColor(Color.GRAY);
-def BODY_RANGE = max(open,close) - min(open,close);
+plot VolAvg = MovingAverage(volAvgType,volume,volAvgLength);
+VolAvg.SetPaintingStrategy(PaintingStrategy.squared_HISTOGRAM);
+VolAvg.SetDefaultColor(Color.GRAY);
+def BODY_RANGE = AbsValue(close - open);
 def IR_BODY = if (BODY_RANGE < BODY_RANGE[1]) and (volume > volume[1]) then 1 else 0 ;
 def IR_BODYG  = if IR_BODY and buying > selling then 1 else 0;
 def IR_BODYR  = if IR_BODY and buying < selling then 1 else 0;
