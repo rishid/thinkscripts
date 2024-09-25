@@ -1,9 +1,9 @@
 # levels.tosts
-# Copyright: Rishi Dhupar
+# Modified by: Rishi Dhupar
 
 # Create levels on charts
 
-# Previous Day High/Low/Close + Premarket High/Low + High/Low/Open of Day + ATR Lines
+# Previous Day High/Low/Close + Premarket High/Low + High/Low/Open of Day
 # Created by Wiinii
 # V1.6
 # Some code based on code by Mobius (premarket) and TraderKevin (ATR lines
@@ -30,11 +30,12 @@ def aggregationPeriod = AggregationPeriod.DAY;
 def displace = -1;
 def timeopen = SecondsFromTime(locate_bubbles_at_time) == 0;
 def isExpansion = locate_bubbles_at == locate_bubbles_at.Expansion and IsNaN(close);
-def firstExpansionBar = if !IsNaN(close[-1]) and isExpansion then 1 else if isExpansion then firstExpansionBar[1] + 1 else 0;
-def BubbleLocation = if locate_bubbles_at == locate_bubbles_at.Time then timeopen else isExpansion and firstExpansionBar == BarsFromExpansion;
-def Intraday = if GetAggregationPeriod() < 86400000 
-    then 1
-    else 0;
+def firstExpansionBar = if !IsNaN(close[-1]) and isExpansion then 1 
+                        else if isExpansion then firstExpansionBar[1] + 1 else 0;
+def BubbleLocation = if locate_bubbles_at == locate_bubbles_at.Time then timeopen
+                     else isExpansion and firstExpansionBar == BarsFromExpansion;
+def Intraday = if GetAggregationPeriod() < 86400000 then 1
+               else 0;
 def RTH = getTime() >= RegularTradingStart(getYYYYMMDD()) and getTime() <= RegularTradingEnd(getYYYYMMDD()); 
 
 #----- Previous Day High/Low/Close -----#
@@ -169,7 +170,7 @@ if showOnlyLastPeriod and !IsNaN(close(period = aggregationPeriod)[-1]) {
     Low_of_Day = Lowest(low(period = aggregationPeriod), length);
 }
 
-DayOpen.SetDefaultColor (Color.GRAY);
+DayOpen.SetDefaultColor(Color.GRAY);
 DayOpen.SetPaintingStrategy(PaintingStrategy.DASHES);
 DayOpen.SetLineWeight(2);
 DayOpen.HideTitle();
