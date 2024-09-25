@@ -82,14 +82,11 @@ PD_Close.HideBubble();
 
 def GlobeX = GetTime() < RegularTradingStart(GetYYYYMMDD());
 
-def vol = if GlobeX and !GlobeX[1]
-then v
-else if GlobeX
-then vol[1] + v
-else na;
-
-def GlobeX_Volume = vol;
-
+# Determine the Overnight High (ONhigh)
+# This variable captures the highest price during the overnight session (outside regular trading hours).
+# It initializes ONhigh to the current high when transitioning from regular trading hours to overnight,
+# updates ONhigh if the current high exceeds the previous ONhigh while still in the overnight session,
+# and retains the previous value of ONhigh when none of these conditions are met.
 def ONhigh = if GlobeX and !GlobeX[1]
 then h
 else if GlobeX and
