@@ -94,6 +94,11 @@ h > ONhigh[1]
 then h
 else ONhigh[1];
 
+# Identify the Bar Number of the Overnight High (ONhighBar)
+# This variable records the bar number where the Overnight High (ONhigh) occurred.
+# It checks if the current bar is outside regular trading hours and if the current high equals ONhigh.
+# If both conditions are true, it assigns the current bar number to ONhighBar.
+# If not, it retains the previous value of ONhighBar.
 def ONhighBar = if GlobeX and h == ONhigh
 then bn
 else na;
