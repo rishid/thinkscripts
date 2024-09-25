@@ -156,7 +156,6 @@ AddChartBubble(ShowBubbles and if locate_bubbles_at == locate_bubbles_at.Time th
 
 #----- Today Open/High/Low -----#
 
-
 plot High_of_Day;
 plot Low_of_Day;
 plot DayOpen;
@@ -193,34 +192,3 @@ AddChartBubble(ShowBubbles and BubbleLocation, High_of_Day, "HOD: " + (if ShowPr
 
 DefineGlobalColor("Low_of_Day", CreateColor(102, 178, 255));
 AddChartBubble(ShowBubbles and BubbleLocation, Low_of_Day, "LOD: " + (if ShowPricesInBubbles then AsText(Low_of_Day) else ""), GlobalColor("Low_of_Day"), no);
-
-#----- ATR Lines -----# Thaanks to TraderKevin
-input showAtrLines = Yes;
-input atrLinesFrom = {default pdc, dayOpen};
-input ATRlength = 14;
-input averageType = AverageType.WILDERS;
-
-def ATR = MovingAverage(averageType, TrueRange(high(period = ”DAY”)[1], close(period = ”DAY”)[1], low(period = ”DAY”)[1]), ATRlength);
-
-plot hatr = if atrLinesFrom  == atrLinesFrom .dayOpen then DayOpen + ATR else PD_Close + ATR;
-plot latr = if atrLinesFrom  == atrLinesFrom .dayOpen then DayOpen - ATR else PD_Close - ATR;
-
-hatr.SetLineWeight(5);
-hatr.SetDefaultColor(Color.RED);
-hatr.SetStyle(Curve.LONG_DASH);
-hatr.HideBubble();
-hatr.HideTitle();
-hatr.SetHiding(showAtrLines == no);
-
-latr.SetLineWeight(5);
-latr.SetStyle(Curve.LONG_DASH);
-latr.SetDefaultColor(Color.GREEN);
-latr.HideBubble();
-latr.HideTitle();
-latr.SetHiding(showAtrLines == no);
-
-DefineGlobalColor("hatr", Color.PINK);
-AddChartBubble(ShowBubbles and showAtrLines and BubbleLocation, hatr, "ATRH: " + (if ShowPricesInBubbles then AsText(hatr) else ""), GlobalColor("hatr"));
-
-DefineGlobalColor("latr", Color.LIGHT_GREEN);
-AddChartBubble(ShowBubbles and showAtrLines and BubbleLocation, latr, "ATRL: " + (if ShowPricesInBubbles then AsText(latr) else ""), GlobalColor("latr"), no);
