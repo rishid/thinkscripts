@@ -87,13 +87,13 @@ phase.HideBubble();
 phase.HideTitle();
 
 # Create yellow box for distribution to mark up transition
-plot DistributionToMarkUp = if in_mark_up and in_distribution[1] then price else Double.NaN;
+plot DistributionToMarkUp = if in_mark_up and in_distribution[1] then (oscillator_signal + 20) else Double.NaN;
 DistributionToMarkUp.SetDefaultColor(Color.YELLOW);
 DistributionToMarkUp.SetPaintingStrategy(PaintingStrategy.SQUARES);
 DistributionToMarkUp.HideBubble();
 
 # Create yellow box for accumulation to mark down transition
-plot AccumulationToMarkDown = if in_mark_down and in_accumulation[1] then price else Double.NaN;
+plot AccumulationToMarkDown = if in_mark_down and in_accumulation[1] then (oscillator_signal - 20) else Double.NaN;
 AccumulationToMarkDown.SetDefaultColor(Color.YELLOW);
 AccumulationToMarkDown.SetPaintingStrategy(PaintingStrategy.SQUARES);
 AccumulationToMarkDown.HideBubble();
