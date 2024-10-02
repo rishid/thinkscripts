@@ -49,7 +49,11 @@ PotentialReversal.SetDefaultColor(Color.PINK);
 # v3
 
 
-#hint: The indicator finds irregular bodies based on candle size and volume, it colors price to indicate irregular bodies below volume average (blue bullish and plum bearish) and indicate irregular bodies above-average volume (cyan bullish and magenta bearish). Also colors price with above-average volume (green bullish and red bearish) and below-average volume (light green bullish and orange bearish). \n As confirmation watch TMO(trueMomentumOsc), it should be above zero for entering short and below zero for entering long.\n\n<b>Note: </b>To view aggregations higher than daily comment out the two "AddLabel" lines by prefixing them with a "#" sign.
+#hint: The indicator finds irregular bodies based on candle size and volume, it colors price to indicate irregular bodies below volume average (blue bullish and plum bearish) 
+# and indicate irregular bodies above-average volume (cyan bullish and magenta bearish). Also colors price with above-average volume (green bullish and red bearish) 
+# and below-average volume (light green bullish and orange bearish). 
+# As confirmation watch TMO(trueMomentumOsc), it should be above zero for entering short and below zero for entering long.
+# To view aggregations higher than daily comment out the two "AddLabel" lines by prefixing them with a "#" sign.
 
 
 input showReversalSignals = yes;
