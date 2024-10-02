@@ -40,8 +40,7 @@ extended_down_zone.HideTitle();
 
 # Bollinger Band Compression Signal
 def bband_offset = 2.0 * STDev(close, 21);
-def bband_up = pivot + bband_offset
-;
+def bband_up = pivot + bband_offset;
 def bband_down = pivot - bband_offset;
 def compression_threshold_up = pivot + (2.0 * ta.atr(14));
 def compression_threshold_down = pivot - (2.0 * ta.atr(14));
@@ -80,7 +79,21 @@ def in_launch_box = oscillator_signal >= -23.6 and oscillator_signal <= 23.6;
 def in_mark_down = oscillator_signal > -61.8 and oscillator_signal < -23.6;
 def in_accumulation = oscillator_signal <= -61.8 and oscillator_signal > -100;
 def extended_down = oscillator_signal <= -100;
+
+# Plot phase
 plot phase = if in_launch_box then 0 else if in_mark_up then 1 else if in_mark_down then -1 else if in_accumulation then -2 else if in_distribution then 2 else if extended_down then -3 else -3;
 phase.SetHiding(1);
 phase.HideBubble();
 phase.HideTitle();
+
+# Create yellow box for distribution to mark up transition
+plot DistributionToMarkUp = if in_mark_up and in_distribution[1] then price else Double.NaN;
+DistributionToMarkUp.SetDefaultColor(Color.YELLOW);
+DistributionToMarkUp.SetPaintingStrategy(PaintingStrategy.SQUARES);
+DistributionToMarkUp.HideBubble();
+
+# Create yellow box for accumulation to mark down transition
+plot AccumulationToMarkDown = if in_mark_down and in_accumulation[1] then price else Double.NaN;
+AccumulationToMarkDown.SetDefaultColor(Color.YELLOW);
+AccumulationToMarkDown.SetPaintingStrategy(PaintingStrategy.SQUARES);
+AccumulationToMarkDown.HideBubble();
