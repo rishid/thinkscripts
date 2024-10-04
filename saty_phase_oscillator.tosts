@@ -4,6 +4,7 @@
 
 declare lower;
 input Show_Labels = yes;
+input Show_Mean_Reversion_Signals = yes;
 
 # Saty Phase Oscillator Signal
 def pivot = ExpAverage(close, 21);
@@ -40,12 +41,13 @@ extended_down_zone.HideTitle();
 
 # Bollinger Band Compression Signal
 def bband_offset = 2.0 * STDev(close, 21);
-def bband_up = pivot + bband_offset;
+def bband_up = pivot + bband_offset
+;
 def bband_down = pivot - bband_offset;
-def compression_threshold_up = pivot + (2.0 * ta.atr(14));
-def compression_threshold_down = pivot - (2.0 * ta.atr(14));
-def expansion_threshold_up = pivot + (1.854 * ta.atr(14));
-def expansion_threshold_down = pivot - (1.854 * ta.atr(14));
+def compression_threshold_up = pivot + (2.0 * ATR(14));
+def compression_threshold_down = pivot - (2.0 * ATR(14));
+def expansion_threshold_up = pivot + (1.854 * ATR(14));
+def expansion_threshold_down = pivot - (1.854 * ATR(14));
 def compression = if above_pivot then bband_up - compression_threshold_up else compression_threshold_down - bband_down;
 def expansion_zone = if above_pivot then bband_up - expansion_threshold_up else expansion_threshold_down - bband_down;
 def expansion = compression[1] <= compression[0];
@@ -58,6 +60,20 @@ compression_level.SetLineWeight(2);
 
 # Compressing / Expanding / Expanded
 AddLabel(show_labels == yes and compression_tracker == 1, "Compression ", Color.MAGENTA);
+
+# Mean Reversion PO Crossover Signals
+def leaving_accumulation = (oscillator_signal[1] <= -61.8) and (oscillator_signal >= -61.8);
+def leaving_distribution = (oscillator_signal[1] >= 61.8) and (oscillator_signal <= 61.8);
+plot bullish_cross = if Show_Mean_Reversion_Signals and leaving_accumulation then oscillator_signal[1] - 5 else Double.NaN;
+bullish_cross.SetPaintingStrategy(PaintingStrategy.SQUARES);
+bullish_cross.AssignValueColor(Color.YELLOW);
+bullish_cross.SetLineWeight(1);
+bullish_cross.HideBubble();
+plot bearish_cross = if Show_Mean_Reversion_Signals and leaving_distribution then oscillator_signal[1] + 5 else Double.NaN;
+bearish_cross.SetPaintingStrategy(PaintingStrategy.SQUARES);
+bearish_cross.AssignValueColor(Color.YELLOW);
+bearish_cross.SetLineWeight(1);
+bearish_cross.HideBubble();
 
 # Phase Oscillator Plot Colors
 phase_oscillator.AssignValueColor(
@@ -79,21 +95,8 @@ def in_launch_box = oscillator_signal >= -23.6 and oscillator_signal <= 23.6;
 def in_mark_down = oscillator_signal > -61.8 and oscillator_signal < -23.6;
 def in_accumulation = oscillator_signal <= -61.8 and oscillator_signal > -100;
 def extended_down = oscillator_signal <= -100;
-
-# Plot phase
 plot phase = if in_launch_box then 0 else if in_mark_up then 1 else if in_mark_down then -1 else if in_accumulation then -2 else if in_distribution then 2 else if extended_down then -3 else 3;
 phase.SetHiding(1);
 phase.HideBubble();
 phase.HideTitle();
 
-# Create yellow box for distribution to mark up transition
-plot DistributionToMarkUp = if in_mark_up and in_distribution[1] then (oscillator_signal + 20) else Double.NaN;
-DistributionToMarkUp.SetDefaultColor(Color.YELLOW);
-DistributionToMarkUp.SetPaintingStrategy(PaintingStrategy.SQUARES);
-DistributionToMarkUp.HideBubble();
-
-# Create yellow box for accumulation to mark down transition
-plot AccumulationToMarkDown = if in_mark_down and in_accumulation[1] then (oscillator_signal - 20) else Double.NaN;
-AccumulationToMarkDown.SetDefaultColor(Color.YELLOW);
-AccumulationToMarkDown.SetPaintingStrategy(PaintingStrategy.SQUARES);
-AccumulationToMarkDown.HideBubble();
