@@ -75,6 +75,9 @@ bearish_cross.AssignValueColor(Color.YELLOW);
 bearish_cross.SetLineWeight(1);
 bearish_cross.HideBubble();
 
+Alert(bullish_cross, "Alert: PO_BULLISH_CROSS!!", Alert.BAR, Sound.Ding);
+Alert(bearish_cross, "Alert: PO_BEARISH_CROSS!!", Alert.BAR, Sound.Ding);
+
 # Phase Oscillator Plot Colors
 phase_oscillator.AssignValueColor(
     if compression_tracker == 1 then Color.MAGENTA
