@@ -100,7 +100,7 @@ def ONhigh = if !RTH and RTH[1] then h
 # If both conditions are true, it assigns the current bar number to ONhighBar.
 # If not, it retains the previous value of ONhighBar.
 def ONhighBar = if !RTH and h == ONhigh then bn
-                else ONhighBar[1]
+                else ONhighBar[1];
 
 # Overnight Low (ONlow): 
 #   - Initializes at the low price when transitioning from RTH to non-RTH hours
