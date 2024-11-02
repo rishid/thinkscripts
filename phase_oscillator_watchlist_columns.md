@@ -24,7 +24,8 @@ def compression_tracker = if expansion and expansion_zone > 0 then 0 else if com
 plot phase_oscillator = oscillator_signal;
 phase_oscillator.AssignValueColor(if compression_tracker == 1 then Color.MAGENTA 
                                         else if oscillator_signal >= 0 then Color.GREEN
-                                        else Color.RED);```
+                                        else Color.RED);
+```
 
 3. Rename your Custom to PO (Timeframe)
 
