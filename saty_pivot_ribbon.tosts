@@ -20,6 +20,8 @@ input Show_Fast_Conviction_EMA = yes;
 input Show_Slow_Conviction_EMA = yes;
 input Show_Candle_Bias = no;
 input Bias_EMA = 21;
+input Show_Additional_EMA = yes;
+input Additional_EMA = 200;
 
 # Time Warp
 def price;
@@ -66,6 +68,7 @@ def PivotValue = ExpAverage(price, Pivot_EMA);
 def SlowValue = ExpAverage(price, Slow_EMA);
 def Fast_Conviction_Value = ExpAverage(price, Fast_Conviction_EMA);
 def Slow_Conviction_Value = ExpAverage(price, Slow_Conviction_EMA);
+def Additional_EMA_Value = ExpAverage(price, Additional_EMA);
 
 # Add Clouds
 DefineGlobalColor("Fast Long", Color.GREEN);
@@ -116,6 +119,13 @@ plot slow_conviction_ema_signal = if Show_Slow_Conviction_EMA then Slow_Convicti
 slow_conviction_ema_signal.setDefaultColor(Color.PLUM);
 slow_conviction_ema_signal.HideBubble();
 slow_conviction_ema_signal.SetLineWeight(2);
+
+# Additional EMA
+DefineGlobalColor("Additional EMA", CreateColor(153, 76, 0));
+plot additional_ema_signal = if Show_Additional_EMA then Additional_EMA_Value else Double.NaN;
+additional_ema_signal.SetDefaultColor(GlobalColor("Additional EMA"));
+additional_ema_signal.HideBubble();
+additional_ema_signal.SetLineWeight(1);
 
 # Show Candle Bias
 def BiasValue = ExpAverage(price, Bias_EMA);
