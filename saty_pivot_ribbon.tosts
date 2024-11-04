@@ -18,8 +18,8 @@ input Fast_Conviction_EMA = 13;
 input Slow_Conviction_EMA = 48;
 input Show_Fast_Conviction_EMA = yes;
 input Show_Slow_Conviction_EMA = yes;
-input Additional_EMA = 200;
-input Show_Additional_EMA = yes;
+input Show_Candle_Bias = no;
+input Bias_EMA = 21;
 
 # Time Warp
 def price;
@@ -66,7 +66,6 @@ def PivotValue = ExpAverage(price, Pivot_EMA);
 def SlowValue = ExpAverage(price, Slow_EMA);
 def Fast_Conviction_Value = ExpAverage(price, Fast_Conviction_EMA);
 def Slow_Conviction_Value = ExpAverage(price, Slow_Conviction_EMA);
-def Additional_EMA_Value = ExpAverage(price, Additional_EMA);
 
 # Add Clouds
 DefineGlobalColor("Fast Long", Color.GREEN);
@@ -110,15 +109,19 @@ bearish_conviction_signal.AssignValueColor(GlobalColor("Bearish Conviction Arrow
 bearish_conviction_signal.SetLineWeight(Conviction_Arrow_Size);
 bearish_conviction_signal.HideBubble();
 plot fast_conviction_ema_signal = if Show_Fast_Conviction_EMA then Fast_Conviction_Value else Double.NaN;
-fast_conviction_ema_signal.SetDefaultColor(Color.LIGHT_GRAY);
+fast_conviction_ema_signal.setDefaultColor(Color.LIGHT_GRAY);
 fast_conviction_ema_signal.HideBubble();
 fast_conviction_ema_signal.SetLineWeight(1);
 plot slow_conviction_ema_signal = if Show_Slow_Conviction_EMA then Slow_Conviction_Value else Double.NaN;
-slow_conviction_ema_signal.SetDefaultColor(Color.PLUM);
+slow_conviction_ema_signal.setDefaultColor(Color.PLUM);
 slow_conviction_ema_signal.HideBubble();
-slow_conviction_ema_signal.SetLineWeight(1);
-DefineGlobalColor("Additional EMA", CreateColor(153, 76, 0));
-plot additional_ema_signal = if Show_Additional_EMA then Additional_EMA_Value else Double.NaN;
-additional_ema_signal.SetDefaultColor(GlobalColor("Additional EMA"));
-additional_ema_signal.HideBubble();
-additional_ema_signal.SetLineWeight(1);
+slow_conviction_ema_signal.SetLineWeight(2);
+
+# Show Candle Bias
+def BiasValue = ExpAverage(price, Bias_EMA);
+def above_pivot = close >= BiasValue;
+def below_pivot = close < BiasValue;
+def up = open < close;
+def doji = open == close;
+def down = open > close;
+AssignPriceColor(if above_pivot and up and Show_Candle_Bias then GlobalColor("Fast Long") else if below_pivot and up and Show_Candle_Bias then GlobalColor("Slow Short") else if above_pivot and down and Show_Candle_Bias then GlobalColor("Slow Long") else if below_pivot and down and Show_Candle_Bias then GlobalColor("Fast Short") else if doji and Show_Candle_Bias then Color.GRAY else Color.CURRENT);
