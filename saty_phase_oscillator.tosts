@@ -4,7 +4,8 @@
 
 declare lower;
 input Show_Labels = yes;
-input Show_Mean_Reversion_Signals = yes;
+input Show_Zone_Crosses = yes;
+input Show_Extreme_Crosses = yes;
 
 # Saty Phase Oscillator Signal
 def pivot = ExpAverage(close, 21);
@@ -62,21 +63,24 @@ compression_level.SetLineWeight(2);
 AddLabel(show_labels == yes and compression_tracker == 1, "Compression ", Color.MAGENTA);
 
 # Mean Reversion PO Crossover Signals
-def leaving_accumulation = (oscillator_signal[1] <= -61.8) and (oscillator_signal >= -61.8);
-def leaving_distribution = (oscillator_signal[1] >= 61.8) and (oscillator_signal <= 61.8);
-plot bullish_cross = if Show_Mean_Reversion_Signals and leaving_accumulation then oscillator_signal[1] - 5 else Double.NaN;
-bullish_cross.SetPaintingStrategy(PaintingStrategy.SQUARES);
+def leaving_accumulation = (oscillator_signal[1] <= -61.8) and (oscillator_signal > -61.8);
+def leaving_extreme_down = (oscillator_signal[1] <= -100) and (oscillator_signal > -100);
+def leaving_distribution = (oscillator_signal[1] >= 61.8) and (oscillator_signal < 61.8);
+def leaving_extreme_up = (oscillator_signal[1] >= 100) and (oscillator_signal < 100);
+plot bullish_cross = if Show_Extreme_Crosses and leaving_extreme_down then oscillator_signal[1] - 5
+                     else if Show_Zone_Crosses and leaving_accumulation then oscillator_signal[1] - 5  
+                     else Double.NaN;
+bullish_cross.SetPaintingStrategy(PaintingStrategy.POINTS);
 bullish_cross.AssignValueColor(Color.YELLOW);
 bullish_cross.SetLineWeight(1);
 bullish_cross.HideBubble();
-plot bearish_cross = if Show_Mean_Reversion_Signals and leaving_distribution then oscillator_signal[1] + 5 else Double.NaN;
-bearish_cross.SetPaintingStrategy(PaintingStrategy.SQUARES);
+plot bearish_cross = if Show_Extreme_Crosses and leaving_extreme_up then oscillator_signal[1] + 5
+                     else if Show_Zone_Crosses and leaving_distribution then oscillator_signal[1] + 5 
+                     else Double.NaN;
+bearish_cross.SetPaintingStrategy(PaintingStrategy.POINTS);
 bearish_cross.AssignValueColor(Color.YELLOW);
 bearish_cross.SetLineWeight(1);
 bearish_cross.HideBubble();
-
-Alert(bullish_cross, "Alert: PO_BULLISH_CROSS!!", Alert.BAR, Sound.Ding);
-Alert(bearish_cross, "Alert: PO_BEARISH_CROSS!!", Alert.BAR, Sound.Ding);
 
 # Phase Oscillator Plot Colors
 phase_oscillator.AssignValueColor(
