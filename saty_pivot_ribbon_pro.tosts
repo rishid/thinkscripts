@@ -4,33 +4,105 @@
 # A Moving Average Ribbon system that simplifies measuring and using Moving Averages for trend and support/resistance.
 # Special thanks to Ripster (@ripster47) for his education and EMA Clouds which inspired this indicator.
 
-# Settings
+# ===== SETTINGS =====
+
+# Time Warp allows you to display moving averages from a higher timeframe on your current chart.
+# This helps identify longer-term trends without switching timeframes. Set to "off" to use current timeframe.
 input Time_Warp = {default "off", "1m", "2m", "3m", "4m", "5m", "10m", "15m", "20m", "30m", "1h", "2h", "4h", "D", "W", "M", "Y"};
+
+# Fast EMA (default 8) is the most responsive moving average, used for immediate trend direction.
+# It forms the top edge of the fast cloud and helps identify quick momentum shifts.
 input Fast_EMA = 8;
+
+# When enabled, displays the Fast EMA as a visible line on the chart.
+# Useful for precise entry/exit points but can clutter the chart if too many lines are shown.
 input Highlight_Fast = no;
+
+# Enables the Pullback Overlap EMA which sits between the Fast and Pivot EMAs.
+# This creates an intermediate cloud layer that helps identify pullback zones in trends.
 input Show_Pullback_Overlap = yes;
+
+# The Pullback Overlap EMA period (default 13) defines the intermediate moving average.
+# It helps identify when price is pulling back but still within the trend structure.
 input Pullback_Overlap_EMA = 13;
+
+# When enabled, displays the Pullback Overlap EMA as a visible line.
+# Helpful for identifying specific pullback levels within the ribbon structure.
 input Highlight_Pullback_Overlap_EMA = no;
+
+# Pivot EMA (default 21) is the core trend-defining moving average.
+# It acts as dynamic support in uptrends and resistance in downtrends, often where price pivots.
 input Pivot_EMA = 21;
+
+# When enabled, displays the Pivot EMA as a visible line (recommended).
+# This is often the most important line as it defines the primary trend direction.
 input Highlight_Pivot = yes;
+
+# Enables color-coding of the Pivot EMA based on a faster EMA comparison.
+# Green when faster EMA is above (bullish bias), red when below (bearish bias).
 input Show_Pivot_Bias = yes;
+
+# The period for the EMA used to determine Pivot bias coloring (default 8).
+# A faster period makes the bias more responsive to recent price action.
 input Pivot_Bias_EMA = 8;
+
+# Slow EMA (default 48) defines the longer-term trend and forms the bottom of the ribbon.
+# Price above this level suggests overall bullish market structure, below suggests bearish.
 input Slow_EMA = 48;
+
+# When enabled, displays the Slow EMA as a visible line.
+# Useful for identifying major support/resistance levels and overall trend direction.
 input Highlight_Slow = no;
+
+# Colors candles based on their position relative to a specified EMA.
+# Green/cyan for bullish positioning, red/orange for bearish positioning.
 input Show_Candle_Bias = yes;
+
+# The EMA period used for candle coloring bias (default 48).
+# Using the Slow EMA period helps filter out noise and show clearer trend direction.
 input Candle_Bias_EMA = 48;
+
+# Displays arrows when fast and slow conviction EMAs cross, signaling trend changes.
+# Up arrows for bullish crossovers, down arrows for bearish crossovers.
 input Show_Conviction_Arrows = yes;
+
+# Controls the visual size of conviction arrows (1-5).
+# Larger sizes are more visible but can clutter the chart.
 input Conviction_Arrow_Size = 2;
+
+# When enabled, displays the Fast Conviction EMA line used for crossover signals.
+# This helps visualize when the crossover is approaching.
 input Show_Fast_Conviction_EMA = no;
+
+# The period for the faster EMA used in conviction crossover signals (default 13).
+# A faster period generates more frequent but potentially less reliable signals.
 input Fast_Conviction_EMA = 13;
+
+# When enabled, displays the Slow Conviction EMA line used for crossover signals.
+# This helps visualize the baseline for conviction crossovers.
 input Show_Slow_Conviction_EMA = no;
+
+# The period for the slower EMA used in conviction crossover signals (default 48).
+# A slower period generates fewer but potentially more reliable signals.
 input Slow_Conviction_EMA = 48;
+
+# Displays a long-term trend EMA for major trend identification (default 200).
+# The 200 EMA is widely watched by institutions and often acts as major support/resistance.
 input Show_Long_Term_Trend = yes;
+
+# The period for the long-term trend EMA (default 200).
+# This represents the overall market regime - bullish above, bearish below.
 input Long_Term_Trend_EMA = 200;
+
+# Colors the long-term EMA based on a faster EMA comparison.
+# Cyan when faster EMA is above (strengthening trend), orange when below (weakening trend).
 input Show_Long_Term_Trend_Bias = yes;
+
+# The EMA period used to determine long-term trend bias coloring (default 21).
+# Using the Pivot EMA period shows when medium-term trend aligns with long-term trend.
 input Long_Term_Trend_Bias_EMA = 21;
 
-# Time Warp
+# ===== TIME WARP PRICE CALCULATION =====
 def price;
 switch (Time_Warp) {
 case "off":
@@ -69,7 +141,8 @@ case "Y":
     price = close(period = AggregationPeriod.YEAR);
 }
 
-# Calculations
+# ===== EMA CALCULATIONS =====
+# Calculate all EMAs once for reuse
 def Fast_Value = ExpAverage(price, Fast_EMA);
 def Pullback_Value = ExpAverage(price, Pullback_Overlap_EMA);
 def Pivot_Value = ExpAverage(price, Pivot_EMA);
@@ -79,68 +152,100 @@ def Fast_Conviction_Value = ExpAverage(price, Fast_Conviction_EMA);
 def Slow_Conviction_Value = ExpAverage(price, Slow_Conviction_EMA);
 def Long_Term_Value = ExpAverage(price, Long_Term_Trend_EMA);
 def Long_Term_Bias_Value = ExpAverage(price, Long_Term_Trend_Bias_EMA);
+def Candle_Bias_Value = ExpAverage(price, Candle_Bias_EMA);
 
-# Add Clouds
+# ===== CLOUD DEFINITIONS =====
+# Fast Cloud: Between Fast EMA and Pivot EMA
 DefineGlobalColor("Fast Long", Color.GREEN);
 DefineGlobalColor("Fast Short", Color.RED);
 AddCloud(Fast_Value, Pivot_Value, GlobalColor("Fast Long"), GlobalColor("Fast Short"));
 
+# Slow Cloud: Between Pullback/Pivot and Slow EMA
 DefineGlobalColor("Slow Long", Color.CYAN);
 DefineGlobalColor("Slow Short", Color.LIGHT_ORANGE);
 AddCloud(if Show_Pullback_Overlap then Pullback_Value else Pivot_Value, Slow_Value, GlobalColor("Slow Long"), GlobalColor("Slow Short"));
 
-# Add Fast Plot
+# ===== LINE PLOTS =====
+# Fast EMA Plot
 DefineGlobalColor("Fast Highlight", Color.GRAY);
 plot Fast = if Highlight_Fast then Fast_Value else Double.NaN;
 Fast.AssignValueColor(GlobalColor("Fast Highlight"));
+Fast.SetLineWeight(1);
 
-# Add Pullback Plot
+# Pullback EMA Plot
 DefineGlobalColor("Pullback Highlight", Color.GRAY);
 plot Pullback = if Show_Pullback_Overlap and Highlight_Pullback_Overlap_EMA then Pullback_Value else Double.NaN;
 Pullback.AssignValueColor(GlobalColor("Pullback Highlight"));
+Pullback.SetLineWeight(1);
 
-# Add Pivot Plot
+# Pivot EMA Plot with Bias Coloring
 DefineGlobalColor("Pivot Highlight", Color.LIGHT_GRAY);
 plot Pivot = if Highlight_Pivot or Show_Pivot_Bias then Pivot_Value else Double.NaN;
 Pivot.AssignValueColor(if Show_Pivot_Bias then (if Pivot_Bias_Value >= Pivot_Value then Color.GREEN else Color.RED) else GlobalColor("Pivot Highlight"));
+Pivot.SetLineWeight(2);
 
-# Add Slow Plot
+# Slow EMA Plot
 DefineGlobalColor("Slow Highlight", Color.GRAY);
 plot Slow = if Highlight_Slow then Slow_Value else Double.NaN;
 Slow.AssignValueColor(GlobalColor("Slow Highlight"));
+Slow.SetLineWeight(1);
 
-# Add Long-Term EMA
+# Long-Term EMA Plot with Bias Coloring
 DefineGlobalColor("Long-term EMA", Color.DARK_GRAY);
 plot Long_Term = if Show_Long_Term_Trend then Long_Term_Value else Double.NaN;
 Long_Term.AssignValueColor(if Show_Long_Term_Trend_Bias then (if Long_Term_Bias_Value >= Long_Term_Value then Color.CYAN else Color.LIGHT_ORANGE) else GlobalColor("Long-term EMA"));
+Long_Term.SetLineWeight(2);
 
-# Conviction Arrows 
+# ===== CONVICTION ARROWS =====
 DefineGlobalColor("Bullish Conviction Arrow", Color.CYAN);
 DefineGlobalColor("Bearish Conviction Arrow", Color.LIGHT_ORANGE);
+
+# Conviction crossover logic
 def bullish_conviction = Fast_Conviction_Value >= Slow_Conviction_Value;
 def bearish_conviction = Fast_Conviction_Value < Slow_Conviction_Value;
-def bullish_conviction_confirmed = (bullish_conviction == yes and bullish_conviction[1] == no);
-def bearish_conviction_confirmed = (bearish_conviction == yes and bearish_conviction[1] == no);
-plot bullish_conviction_signal = if bullish_conviction_confirmed and Show_Conviction_Arrows then price else Double.NaN;
-plot bearish_conviction_signal = if bearish_conviction_confirmed and Show_Conviction_Arrows then price else Double.NaN;
+def bullish_conviction_confirmed = bullish_conviction and !bullish_conviction[1];
+def bearish_conviction_confirmed = bearish_conviction and !bearish_conviction[1];
+
+# Conviction arrow plots
+plot bullish_conviction_signal = if Show_Conviction_Arrows and bullish_conviction_confirmed then price else Double.NaN;
+plot bearish_conviction_signal = if Show_Conviction_Arrows and bearish_conviction_confirmed then price else Double.NaN;
+
 bullish_conviction_signal.SetPaintingStrategy(PaintingStrategy.BOOLEAN_WEDGE_UP);
 bullish_conviction_signal.AssignValueColor(GlobalColor("Bullish Conviction Arrow"));
 bullish_conviction_signal.SetLineWeight(Conviction_Arrow_Size);
 bullish_conviction_signal.HideBubble();
+
 bearish_conviction_signal.SetPaintingStrategy(PaintingStrategy.BOOLEAN_WEDGE_DOWN);
 bearish_conviction_signal.AssignValueColor(GlobalColor("Bearish Conviction Arrow"));
 bearish_conviction_signal.SetLineWeight(Conviction_Arrow_Size);
 bearish_conviction_signal.HideBubble();
+
+# Conviction EMA plots
 plot fast_conviction_ema_signal = if Show_Fast_Conviction_EMA then Fast_Conviction_Value else Double.NaN;
 fast_conviction_ema_signal.SetDefaultColor(Color.LIGHT_GRAY);
+fast_conviction_ema_signal.SetLineWeight(1);
+
 plot slow_conviction_ema_signal = if Show_Slow_Conviction_EMA then Slow_Conviction_Value else Double.NaN;
 slow_conviction_ema_signal.SetDefaultColor(Color.MAGENTA);
+slow_conviction_ema_signal.SetLineWeight(1);
 
-# Show Candle Bias
-def Candle_Bias_Value = ExpAverage(price, Candle_Bias_EMA);
+# ===== CANDLE BIAS COLORING =====
+# Price position relative to bias EMA
 def above_candle_bias = close >= Candle_Bias_Value;
 def below_candle_bias = close < Candle_Bias_Value;
-def up = open < close;
-def doji = open == close;
-def down = open > close;
-AssignPriceColor(if above_candle_bias and up and Show_Candle_Bias then GlobalColor("Fast Long") else if below_candle_bias and up and Show_Candle_Bias then GlobalColor("Slow Short") else if above_candle_bias and down and Show_Candle_Bias then GlobalColor("Slow Long") else if below_candle_bias and down and Show_Candle_Bias then GlobalColor("Fast Short") else if doji and Show_Candle_Bias then Color.GRAY else Color.CURRENT);
+
+# Candle direction
+def up = close > open;
+def doji = close == open;
+def down = close < open;
+
+# Apply candle coloring based on bias and direction
+AssignPriceColor(
+    if !Show_Candle_Bias then Color.CURRENT
+    else if doji then Color.GRAY
+    else if above_candle_bias and up then GlobalColor("Fast Long")
+    else if above_candle_bias and down then GlobalColor("Slow Long")
+    else if below_candle_bias and up then GlobalColor("Slow Short")
+    else if below_candle_bias and down then GlobalColor("Fast Short")
+    else Color.CURRENT
+);
