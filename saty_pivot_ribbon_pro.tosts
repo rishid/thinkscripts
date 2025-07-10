@@ -8,7 +8,7 @@
 input Time_Warp = {default "off", "1m", "2m", "3m", "4m", "5m", "10m", "15m", "20m", "30m", "1h", "2h", "4h", "D", "W", "M", "Y"};
 input Fast_EMA = 8;
 input Highlight_Fast = no;
-input Show_Pullback_Overlap = no;
+input Show_Pullback_Overlap = yes;
 input Pullback_Overlap_EMA = 13;
 input Highlight_Pullback_Overlap_EMA = no;
 input Pivot_EMA = 21;
@@ -22,13 +22,13 @@ input Candle_Bias_EMA = 48;
 input Show_Conviction_Arrows = yes;
 input Conviction_Arrow_Size = 2;
 input Show_Fast_Conviction_EMA = no;
-input Fast_Conviction_EMA = 8;
+input Fast_Conviction_EMA = 13;
 input Show_Slow_Conviction_EMA = no;
 input Slow_Conviction_EMA = 48;
 input Show_Long_Term_Trend = yes;
 input Long_Term_Trend_EMA = 200;
 input Show_Long_Term_Trend_Bias = yes;
-input Long_Term_Trend_Bias_EMA = 8;
+input Long_Term_Trend_Bias_EMA = 21;
 
 # Time Warp
 def price;
